@@ -32,6 +32,8 @@
             <button type="submit" class="btn btn-solid">Save</button>
             <button type="button" class="btn" id="settings-reset">Reset</button>
           </div>
+          <hr class="menu-divider">
+          <button type="button" class="btn" id="open-news-editor">Customize news…</button>
         </form>
       </details>
     </header>
@@ -136,6 +138,25 @@
     <div class="news-sections" id="news"></div>
   </main>
 
+  <dialog class="news-editor" id="news-editor" aria-labelledby="news-editor-title">
+    <div class="news-editor-head">
+      <div>
+        <h2 id="news-editor-title">Customize news</h2>
+        <p class="notice">Sections and feeds are saved in this browser. Adding a feed asks permission for that site only.</p>
+      </div>
+      <button class="btn btn-icon" id="news-editor-close" type="button" aria-label="Close" title="Close (Esc)">
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="news-editor-body" id="news-editor-body"></div>
+    <div class="news-editor-foot">
+      <p class="editor-status" id="news-editor-status" role="status"></p>
+      <button type="button" class="btn" id="news-editor-reset" title="Use the sections from the configuration file">Restore defaults</button>
+      <button type="button" class="btn" id="news-editor-cancel">Cancel</button>
+      <button type="button" class="btn btn-solid" id="news-editor-save">Save</button>
+    </div>
+  </dialog>
+
   <script src="config.js"></script>
   <script src="src/core.js"></script>
   <script src="lib/d3-dispatch.min.js"></script>
@@ -149,7 +170,9 @@
   <script src="src/vault.js"></script>
   <script src="src/header.js"></script>
   <script src="src/bookmarks.js"></script>
+  <script src="src/news-config.js"></script>
   <script src="src/news.js"></script>
+  <script src="src/news-editor.js"></script>
   <script src="src/reader.js"></script>
   <script src="src/graph.js"></script>
   <script src="src/main.js"></script>

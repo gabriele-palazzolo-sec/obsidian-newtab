@@ -13,7 +13,7 @@ It runs entirely on your computer. No server, no account, no analytics, and no a
 - **Bookmarks** with site icons from the browser cache. Keys <kbd>1</kbd>–<kbd>9</kbd> open them. Add and remove them from the page.
 - **Obsidian graph** drawn with d3-force, following your vault's own graph settings (forces, colour groups, tags, unresolved notes, orphans, arrows). Drag, zoom, hover for a preview, click to read.
 - **Note reader**: headings, lists, tasks, tables, code, callouts, highlights, tags, vault images and navigable `[[links]]`. <kbd>Ctrl</kbd>+click opens a note in Obsidian.
-- **News** from RSS/Atom feeds in configurable sections. CVE identifiers are highlighted, and actively exploited or zero-day vulnerabilities are labelled.
+- **News** from RSS/Atom feeds in sections you edit from the page (⚙ → *Customize news*): rename, reorder, add any feed by its address, or add a ready-made pack (security, advisories, AI, tech, world, Italian news). CVE identifiers are highlighted, and actively exploited or zero-day vulnerabilities are labelled.
 
 ![Reading a note next to the graph](docs/reader.png)
 
@@ -21,7 +21,7 @@ It runs entirely on your computer. No server, no account, no analytics, and no a
 
 This project is also an exercise in building a small browser extension with a minimal attack surface. Details are in [SECURITY.md](SECURITY.md).
 
-- **Least privilege.** No host permissions at install time. Each feed site is requested at runtime, the first time news are shown, and can be revoked from the extension's details page.
+- **Least privilege.** No host permissions at install time. Each feed site is requested at runtime, one site at a time, and permissions for sites no longer used by any feed are given back automatically.
 - **Strict Content Security Policy.** `script-src 'self'`, no inline code, no frames, no objects, fonts bundled locally.
 - **Untrusted notes are sanitised.** Markdown goes through marked and DOMPurify, and the result is used as DOM nodes, never reparsed from strings. Dangerous URL schemes are removed.
 - **No tracking pixels.** Remote images in notes are blocked by default, and their address is removed before the browser can start the request.
@@ -54,6 +54,8 @@ Open `newtab.html?demo=1` from the extension (for example `chrome-extension://<i
 ## Configuration
 
 **Name and accent colour**: settings menu (⚙) in the top-right corner. They are saved in the browser.
+
+**News sections and feeds**: ⚙ → *Customize news*. Feeds must use `https://`, and each new feed is downloaded once to check that it really is RSS or Atom. Changes are saved in the browser and take precedence over the configuration file; *Restore defaults* goes back to it.
 
 **Everything else**: create `config.local.json` next to `manifest.json`. It is git-ignored, so your personal setup never ends up in the repository. You only write what you want to change. Objects are merged with the defaults in [`config.js`](config.js), arrays replace them, and `null` removes a default entry.
 
@@ -101,7 +103,9 @@ config.js              default configuration (no personal data)
 src/core.js            storage, DOM helpers, config loading, settings
 src/header.js          clock, greeting, settings menu, search
 src/bookmarks.js       bookmarks and keys 1–9
+src/news-config.js     pure functions: section validation, ready-made packs
 src/news.js            feeds, runtime permissions, cache
+src/news-editor.js     news editor dialog
 src/vault-parse.js     pure functions: frontmatter, tags, links, name resolution
 src/vault.js           vault access (File System Access API) and index
 src/graph.js           graph (d3-force + canvas), filters, hover preview

@@ -245,7 +245,7 @@
       btnBack.addEventListener("click", () => { const p = history.pop(); if (p) show(p); });
       btnClose.addEventListener("click", close);
       document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && !panel.hidden && !e.target.closest("input")) close();
+        if (e.key === "Escape" && !panel.hidden && !e.target.closest("input") && !document.querySelector("dialog[open]")) close();
       });
     },
     open(path) {
