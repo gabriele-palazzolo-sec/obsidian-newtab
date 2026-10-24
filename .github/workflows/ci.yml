@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Least privilege: the workflow can only read the repository.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests and integrity checks
+    runs-on: ubuntu-latest
+    steps:
+      # Actions are pinned to a full commit SHA (a tag can be moved, a SHA cannot).
+      # Dependabot keeps them up to date.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Unit tests
+        run: npm test
+      - name: Vendored files, manifest and repository checks
+        run: npm run check
+
+  secrets:
+    name: Secret scanning
+    runs-on: ubuntu-latest
+    # On pull requests gitleaks lists the PR's commits through the API, which needs this read-only scope.
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0          # scan the whole history, not only the last commit
+          persist-credentials: false
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
