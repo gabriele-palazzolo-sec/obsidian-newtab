@@ -1,7 +1,7 @@
 // Entry point: loads the configuration, then starts each part of the page.
 (async function () {
   await App.init();
-  const parts = [Header, Bookmarks, Reader, Graph, News];
+  const parts = [Header, Bookmarks, Reader, Graph, News, NewsEditor];
   for (const part of parts) {
     try {
       await part.init();

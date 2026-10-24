@@ -11,6 +11,7 @@
   const CVE = /CVE-\d{4}-\d{4,7}/gi;
 
   let C, box;
+  let sections = [];   // from the editor (saved in the browser) or from the configuration
   const lists = [];
 
   function ago(ts) {
@@ -25,7 +26,7 @@
 
   function layout() {
     box.replaceChildren();
-    C.news.forEach((section, i) => {
+    sections.forEach((section, i) => {
       const list = UI.el("div", { class: "news-list" }, UI.el("p", { class: "muted" }, "Loading…"));
       lists[i] = list;
       const id = `news-title-${i}`;
@@ -124,14 +125,14 @@
   }
 
   async function download() {
-    return Promise.all(C.news.map(async (section) =>
+    return Promise.all(sections.map(async (section) =>
       pick((await Promise.all(section.feeds.map(readFeed))).flat())));
   }
 
   // ── permissions ──
   function feedOrigins() {
     const origins = new Set();
-    for (const s of C.news) for (const f of s.feeds) {
+    for (const s of sections) for (const f of s.feeds) {
       try {
         const u = new URL(f.url);
         if (u.protocol === "https:") origins.add(`${u.origin}/*`);
@@ -182,31 +183,113 @@
     ];
   }
 
+  function emptyState() {
+    const button = UI.el("button", { class: "btn", type: "button" }, "Customize news");
+    button.addEventListener("click", () => window.NewsEditor?.open());
+    box.replaceChildren(UI.el("section", { class: "panel permission-panel" },
+      UI.el("div", { class: "panel-title" }, UI.el("h2", {}, "No news sections")),
+      UI.el("p", { class: "notice" }, "Add a section or a ready-made pack to see news here."),
+      button));
+  }
+
+  // Each run gets a number: a newer run (e.g. after saving in the editor)
+  // makes older downloads stop rendering.
+  let run = 0;
   async function start() {
+    const me = ++run;
+    if (!sections.length) { emptyState(); return; }
     layout();
-    if (App.demo) { demo().forEach((items, i) => renderSection(i, items)); return; }
+    if (App.demo) { demo().forEach((items, i) => lists[i] && renderSection(i, items)); return; }
 
     const missing = await missingOrigins();
+    if (me !== run) return;
     if (missing.length) { askPermission(missing); return; }
 
+    const key = NewsConfig.cacheKey(sections);
     const cache = await Store.get("newsSections");
-    const valid = cache && Array.isArray(cache.sections) && cache.sections.length === C.news.length;
+    const valid = cache && cache.key === key && Array.isArray(cache.sections) && cache.sections.length === sections.length;
     if (valid) cache.sections.forEach((items, i) => renderSection(i, items));
     if (!valid || Date.now() - cache.ts > C.newsCacheMinutes * 60000) {
       const fresh = await download();
+      if (me !== run) return;
       const merged = fresh.map((s, i) => (s.length ? s : (valid ? cache.sections[i] : [])));
       merged.forEach((items, i) => renderSection(i, items));
-      if (fresh.some((s) => s.length)) await Store.set("newsSections", { ts: Date.now(), sections: merged });
+      if (fresh.some((s) => s.length)) await Store.set("newsSections", { key, ts: Date.now(), sections: merged });
+    }
+  }
+
+  // ── sections chosen in the editor ──
+  const defaults = () => NewsConfig.sanitizeSections(C.news);
+
+  async function loadSections() {
+    const saved = App.demo ? undefined : await Store.get("newsConfig");
+    sections = Array.isArray(saved) ? NewsConfig.sanitizeSections(saved) : defaults();
+  }
+
+  // After a change, give back the permissions of sites no longer used by any feed.
+  async function releaseUnusedPermissions() {
+    if (!App.inExtension || !chrome.permissions) return;
+    try {
+      const keep = new Set(NewsConfig.originsOf(sections));
+      const { origins = [] } = await chrome.permissions.getAll();
+      const unused = origins.filter((o) => !keep.has(o));
+      if (unused.length) await chrome.permissions.remove({ origins: unused });
+    } catch (e) {
+      console.warn("[news] could not release permissions", e);
+    }
+  }
+
+  async function apply(next) {
+    sections = next;
+    await Store.remove("newsSections");
+    await releaseUnusedPermissions();
+    start();
+  }
+
+  // Downloads a feed once to check that it really is RSS/Atom, and reads its title.
+  async function probe(url) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 9000);
+    try {
+      const r = await fetch(url, { signal: ctrl.signal, cache: "no-store", credentials: "omit" });
+      if (!r.ok) throw new Error(`the site answered with HTTP ${r.status}`);
+      const xml = new DOMParser().parseFromString(await r.text(), "text/xml");
+      const rootName = xml.documentElement?.nodeName.toLowerCase();
+      if (xml.querySelector("parsererror") || !["rss", "feed", "rdf:rdf"].includes(rootName)) {
+        throw new Error("this address is not an RSS or Atom feed");
+      }
+      const title = toText(xml.querySelector("channel > title, feed > title")?.textContent || "").slice(0, NewsConfig.LIMITS.source);
+      return { title, items: xml.querySelectorAll("item, entry").length };
+    } catch (e) {
+      if (e.name === "AbortError") throw new Error("the site did not answer in time");
+      if (e instanceof TypeError) throw new Error("the feed could not be downloaded");
+      throw e;
+    } finally {
+      clearTimeout(timer);
     }
   }
 
   window.News = {
-    init() {
+    async init() {
       C = App.config;
       box = document.getElementById("news");
-      if (!C.news?.length) { box.hidden = true; return; }
+      await loadSections();
       start();
     },
+    get sections() { return sections.map((s) => ({ ...s, feeds: s.feeds.map((f) => ({ ...f })) })); },
+    get defaults() { return defaults(); },
+    get customized() { return Store.get("newsConfig").then(Array.isArray); },
+    async save(next) {
+      const clean = NewsConfig.sanitizeSections(next);
+      await Store.set("newsConfig", clean);
+      await apply(clean);
+    },
+    async reset() {
+      await Store.remove("newsConfig");
+      await apply(defaults());
+    },
+    releaseUnusedPermissions,
+    probe,
     parseFeed
   };
 })();
