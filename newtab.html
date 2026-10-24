@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>New tab</title>
+  <link rel="stylesheet" href="src/fonts.css">
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+  <main class="page">
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="label" id="label"></span>
+      </div>
+      <details class="menu" id="settings">
+        <summary class="btn btn-icon" aria-label="Settings" title="Settings">
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+        </summary>
+        <form class="menu-panel settings-form" id="settings-form">
+          <div class="menu-title">Settings</div>
+          <label>Your name
+            <input id="settings-name" type="text" maxlength="40" autocomplete="off" placeholder="Shown in the greeting">
+          </label>
+          <label class="inline">Accent colour
+            <input id="settings-accent" type="color" value="#A78BFA">
+          </label>
+          <p class="menu-note">Saved in this browser only.</p>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-solid">Save</button>
+            <button type="button" class="btn" id="settings-reset">Reset</button>
+          </div>
+        </form>
+      </details>
+    </header>
+
+    <section class="hero">
+      <div>
+        <div class="time" id="time">--:--</div>
+        <div class="greeting" id="greeting"></div>
+      </div>
+      <form class="search" id="search" role="search">
+        <div class="search-field">
+          <label for="q" class="sr">Search</label>
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+          <span class="search-engine" id="search-engine" hidden></span>
+          <input id="q" name="q" type="text" autocomplete="off" spellcheck="false" placeholder="Search the web">
+        </div>
+        <div class="prefixes" id="prefixes"></div>
+      </form>
+    </section>
+
+    <section class="block">
+      <h2 class="section-label">Bookmarks</h2>
+      <div class="bookmarks" id="bookmarks"></div>
+
+      <form class="new-bookmark" id="new-bookmark" hidden>
+        <label>Name<input id="nb-name" type="text" required maxlength="60" placeholder="e.g. Hacker News"></label>
+        <label>Address<input id="nb-url" type="text" required placeholder="https://…"></label>
+        <label>Description<input id="nb-description" type="text" maxlength="80" placeholder="Optional"></label>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-solid">Add</button>
+          <button type="button" class="btn" id="nb-cancel">Cancel</button>
+        </div>
+        <p class="form-error" id="nb-error" role="alert" hidden></p>
+      </form>
+    </section>
+
+    <section class="panel graph-panel" aria-labelledby="graph-title">
+      <div class="panel-head">
+        <div class="panel-title">
+          <svg class="accent-icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="12" cy="18" r="2"/><path d="m7.8 6.4 8.4 1.1M7 8l4 8M17 10l-4 6"/></svg>
+          <h2 id="graph-title">Note graph</h2>
+          <span class="muted" id="vault-name"></span>
+        </div>
+        <div class="panel-actions">
+          <details class="menu">
+            <summary class="btn btn-icon" aria-label="Graph filters" title="Graph filters">
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+            </summary>
+            <div class="menu-panel">
+              <div class="menu-title">Show in graph</div>
+              <div id="filter-options"></div>
+              <p class="menu-note">Defaults come from the vault's Obsidian graph settings.</p>
+            </div>
+          </details>
+          <button class="btn btn-icon" id="graph-refresh" type="button" aria-label="Read the vault again" title="Read the vault again" hidden>
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+          </button>
+          <button class="btn btn-icon" id="graph-change" type="button" aria-label="Choose another vault" title="Choose another vault" hidden>
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          </button>
+          <a class="btn" id="open-obsidian" href="obsidian://open">
+            Open Obsidian
+            <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="graph-body" id="graph-body">
+        <div class="graph-area" id="graph-area">
+          <canvas id="graph" aria-label="Graph of the Obsidian notes: click a node to read the note"></canvas>
+          <div class="preview" id="preview" hidden></div>
+          <div class="graph-empty" id="graph-empty" hidden>
+            <p id="graph-msg">Connect your vault folder to see the graph of your notes.</p>
+            <button class="btn btn-solid" id="graph-connect" type="button">Connect vault</button>
+          </div>
+          <div class="graph-info muted" id="graph-info"></div>
+        </div>
+
+        <aside class="reader" id="reader" aria-labelledby="reader-title" hidden>
+          <div class="reader-head">
+            <button class="btn btn-icon" id="reader-back" type="button" aria-label="Previous note" title="Previous note" hidden>
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18 9 12l6-6"/></svg>
+            </button>
+            <div class="reader-titles">
+              <div class="reader-path" id="reader-path"></div>
+              <h3 id="reader-title"></h3>
+            </div>
+            <a class="btn btn-icon" id="reader-obsidian" href="#" aria-label="Open in Obsidian" title="Open in Obsidian">
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+            </a>
+            <button class="btn btn-icon" id="reader-close" type="button" aria-label="Close the note" title="Close (Esc)">
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="reader-body" id="reader-body"></div>
+        </aside>
+      </div>
+
+      <div class="recent" id="recent"></div>
+    </section>
+
+    <div class="news-sections" id="news"></div>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="src/core.js"></script>
+  <script src="lib/d3-dispatch.min.js"></script>
+  <script src="lib/d3-quadtree.min.js"></script>
+  <script src="lib/d3-timer.min.js"></script>
+  <script src="lib/d3-force.min.js"></script>
+  <script src="lib/marked.umd.js"></script>
+  <script src="lib/purify.min.js"></script>
+  <script src="src/vault-parse.js"></script>
+  <script src="src/demo-data.js"></script>
+  <script src="src/vault.js"></script>
+  <script src="src/header.js"></script>
+  <script src="src/bookmarks.js"></script>
+  <script src="src/news.js"></script>
+  <script src="src/reader.js"></script>
+  <script src="src/graph.js"></script>
+  <script src="src/main.js"></script>
+</body>
+</html>
