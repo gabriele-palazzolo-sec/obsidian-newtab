@@ -1,0 +1,15 @@
+{
+  "label": "Personal",
+  "locale": "en-GB",
+  "bookmarks": [
+    { "name": "YouTube", "description": "Videos", "url": "https://www.youtube.com" },
+    { "name": "GitHub", "description": "Projects", "url": "https://github.com" }
+  ],
+  "search": {
+    "default": "https://www.google.com/search?q={q}",
+    "prefixes": {
+      "yt": { "name": "YouTube", "url": "https://www.youtube.com/results?search_query={q}" }
+    }
+  },
+  "graph": { "maxNodes": 800 }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "obsidian-newtab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Browser new tab page with bookmarks, security news and an interactive graph of your Obsidian vault.",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "vendor": "node scripts/vendor.mjs",
+    "check": "node scripts/check.mjs"
+  },
+  "devDependencies": {
+    "d3-dispatch": "3.0.1",
+    "d3-force": "3.0.0",
+    "d3-quadtree": "3.0.1",
+    "d3-timer": "3.0.1",
+    "dompurify": "3.4.17",
+    "marked": "18.1.1",
+    "@fontsource/inter": "5.3.0",
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "@fontsource/instrument-serif": "5.3.0"
+  }
+}
