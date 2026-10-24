@@ -1,0 +1,20 @@
+version: 2
+updates:
+  # GitHub Actions used by the workflows (pinned by SHA)
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  # Libraries bundled in lib/ and fonts/ (DOMPurify, marked, d3-force, fonts).
+  # After a version bump, run `npm run vendor` and commit lib/ and fonts/:
+  # the CI check fails until the bundled copies match the new version.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      d3:
+        patterns: ["d3-*"]
+      fonts:
+        patterns: ["@fontsource/*"]
